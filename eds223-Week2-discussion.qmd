@@ -1,0 +1,64 @@
+---
+title: "EDS223 - Week 2 Discussion"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(sf)
+library(tidyverse)
+library(tmap)
+```
+
+```{r}
+# only have to import shp file
+# the folder however must contain th dpf, prj, sbn, etc...
+col <- st_read(here::here("data", "Colombia", "Colombia.shp"))
+obs <- read_csv(here::here("data", "dataves.csv"))
+roads <- st_read(here::here("data", "RDLINE_colombia", "RDLINE_colombia.shp"))
+```
+
+```{r}
+obs <- read_csv(here::here("data", "dataves.csv")) |> 
+  as_tibble() |> 
+  rename(long = decimal_longitude) |> 
+  rename(lat = decimal_latitude)
+
+obs <- obs |> 
+  st_as_sf(coords = c("long", "lat"), crs = 4326) # 4326, shorthand for WGRS84
+```
+
+```{r}
+col_andean <- col |> 
+  mutate(N1_MacroBi = as.factor(N1_MacroBi)) |> 
+  filter(N1_MacroBi == "Andean")
+```
+
+```{r}
+tm_shape(col_andean) +
+  tm_polygons() +
+  tm_layout(main.title = "Andean Region of Colombia")
+```
+
+
+```{r}
+st_crc(col)$units
+```
+
+```{r}
+st_crs(col) ==st_crs(roads)
+```
+
+```{r}
+st_crs(col) == st_crs(obs)
+```
+
+```{r}
+aves <- st_transform(obs, crs = st_crs(col))
+```
+
+```{r}
+st_crs(col) == st_crs(obs)
+``` 
